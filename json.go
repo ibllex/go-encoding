@@ -2,21 +2,21 @@ package encoding
 
 import (
 	"bytes"
-	"encoding/gob"
+	"encoding/json"
 )
 
-type GobCodec struct {
+type JsonCodec struct {
 	codec
 }
 
-func (c *GobCodec) Marshal(value interface{}) ([]byte, error) {
+func (c *JsonCodec) Marshal(value interface{}) ([]byte, error) {
 
 	if primitive, err := c.marshalPrimitive(value); err != errNotPrimitive {
 		return primitive, err
 	}
 
 	var b bytes.Buffer
-	encoder := gob.NewEncoder(&b)
+	encoder := json.NewEncoder(&b)
 	if err := encoder.Encode(value); err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (c *GobCodec) Marshal(value interface{}) ([]byte, error) {
 	return c.compress(b.Bytes())
 }
 
-func (c *GobCodec) Unmarshal(byt []byte, ptr interface{}) (err error) {
+func (c *JsonCodec) Unmarshal(byt []byte, ptr interface{}) (err error) {
 
 	if err := c.unmarshalPrimitive(byt, ptr); err != errNotPrimitive {
 		return err
@@ -35,12 +35,12 @@ func (c *GobCodec) Unmarshal(byt []byte, ptr interface{}) (err error) {
 	}
 
 	b := bytes.NewBuffer(byt)
-	decoder := gob.NewDecoder(b)
+	decoder := json.NewDecoder(b)
 	return decoder.Decode(ptr)
 }
 
-func NewGobCodec(compressor Compressor) *GobCodec {
-	return &GobCodec{
+func NewJsonCodec(compressor Compressor) *JsonCodec {
+	return &JsonCodec{
 		codec{compressor},
 	}
 }

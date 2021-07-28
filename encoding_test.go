@@ -59,6 +59,7 @@ func TestRoundTrip(t *testing.T) {
 	codecs := map[string]encoding.Codec{
 		"gob":     encoding.NewGobCodec(compressor),
 		"msgpack": encoding.NewMsgPackCodec(compressor),
+		"json":    encoding.NewJsonCodec(compressor),
 	}
 
 	for name, codec := range codecs {

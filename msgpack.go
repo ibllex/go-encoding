@@ -7,17 +7,13 @@ import (
 )
 
 type MsgPackCodec struct {
-	compressor Compressor
+	codec
 }
 
 func (c *MsgPackCodec) Marshal(value interface{}) ([]byte, error) {
-	switch value := value.(type) {
-	case nil:
-		return nil, nil
-	case []byte:
-		return value, nil
-	case string:
-		return []byte(value), nil
+
+	if primitive, err := c.marshalPrimitive(value); err != errNotPrimitive {
+		return primitive, err
 	}
 
 	var b bytes.Buffer
@@ -34,44 +30,24 @@ func (c *MsgPackCodec) Marshal(value interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	if c.compressor != nil {
-		return c.compressor.Compress(b.Bytes())
-	}
-
-	return b.Bytes(), nil
+	return c.compress(b.Bytes())
 }
 
-func (c *MsgPackCodec) Unmarshal(b []byte, value interface{}) error {
-	if len(b) == 0 {
-		return nil
+func (c *MsgPackCodec) Unmarshal(byt []byte, ptr interface{}) (err error) {
+
+	if err := c.unmarshalPrimitive(byt, ptr); err != errNotPrimitive {
+		return err
 	}
 
-	switch value := value.(type) {
-	case nil:
-		return nil
-	case *[]byte:
-		clone := make([]byte, len(b))
-		copy(clone, b)
-		*value = clone
-		return nil
-	case *string:
-		*value = string(b)
-		return nil
+	if byt, err = c.decompress(byt); err != nil {
+		return
 	}
 
-	if c.compressor != nil {
-		var err error
-		b, err = c.compressor.Decompress(b)
-		if err != nil {
-			return err
-		}
-	}
-
-	return msgpack.Unmarshal(b, value)
+	return msgpack.Unmarshal(byt, ptr)
 }
 
 func NewMsgPackCodec(compressor Compressor) *MsgPackCodec {
 	return &MsgPackCodec{
-		compressor: compressor,
+		codec{compressor},
 	}
 }
