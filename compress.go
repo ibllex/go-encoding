@@ -8,22 +8,21 @@ import (
 )
 
 const (
-	S2Compression = 0x1
+	s2Compression = 0x1
 )
 
 type DefaultCompressor struct {
-	way   int
-	chunk int
+	way int
 }
 
 func (c *DefaultCompressor) Compress(data []byte) ([]byte, error) {
 
 	switch c.way {
-	case S2Compression:
+	case s2Compression:
 		n := s2.MaxEncodedLen(len(data)) + 1
-		b := make([]byte, n, n+c.chunk)
+		b := make([]byte, n)
 		b = s2.Encode(b, data)
-		b = append(b, S2Compression)
+		b = append(b, s2Compression)
 		return b, nil
 	default:
 		return data, fmt.Errorf("unknown compression method: %x", c.way)
@@ -34,7 +33,7 @@ func (c *DefaultCompressor) Compress(data []byte) ([]byte, error) {
 func (c *DefaultCompressor) Decompress(data []byte) ([]byte, error) {
 
 	switch c := data[len(data)-1]; c {
-	case S2Compression:
+	case s2Compression:
 		data = data[:len(data)-1]
 
 		_, err := s2.DecodedLen(data)
@@ -55,9 +54,8 @@ func (c *DefaultCompressor) Decompress(data []byte) ([]byte, error) {
 	return data, nil
 }
 
-func NewS2Compressor(chunk int) Compressor {
+func NewS2Compressor() Compressor {
 	return &DefaultCompressor{
-		way:   S2Compression,
-		chunk: chunk,
+		way: s2Compression,
 	}
 }

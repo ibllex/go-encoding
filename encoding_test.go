@@ -54,7 +54,7 @@ var (
 )
 
 func TestRoundTrip(t *testing.T) {
-	compressor := encoding.NewS2Compressor(4)
+	compressor := encoding.NewS2Compressor()
 
 	codecs := map[string]encoding.Codec{
 		"gob":     encoding.NewGobCodec(compressor),
