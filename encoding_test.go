@@ -11,19 +11,19 @@ type MockStruct struct {
 	X int
 }
 
-func (s MockStruct) Method1() {}
+func (s MockStruct) MockMethod() {}
 
-type Interface1 interface {
-	Method1()
+type MockInterface interface {
+	MockMethod()
 }
 
 var (
-	structType                 = MockStruct{1}
-	ptrStruct                  = &MockStruct{2}
-	emptyIface     interface{} = MockStruct{3}
-	iface1         Interface1  = MockStruct{4}
-	sliceStruct                = []MockStruct{{5}, {6}, {7}}
-	ptrSliceStruct             = []*MockStruct{{8}, {9}, {10}}
+	structType                   = MockStruct{1}
+	ptrStruct                    = &MockStruct{2}
+	emptyIface     interface{}   = MockStruct{3}
+	iface1         MockInterface = MockStruct{4}
+	sliceStruct                  = []MockStruct{{5}, {6}, {7}}
+	ptrSliceStruct               = []*MockStruct{{8}, {9}, {10}}
 
 	valueMap = map[string]interface{}{
 		"bytes":          []byte{0x61, 0x62, 0x63, 0x64},
@@ -54,7 +54,7 @@ var (
 )
 
 func TestRoundTrip(t *testing.T) {
-	compressor := encoding.NewS2Compressor()
+	compressor := encoding.NewGzipCompressor()
 
 	codecs := map[string]encoding.Codec{
 		"gob":     encoding.NewGobCodec(compressor),
